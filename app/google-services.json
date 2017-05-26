@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "855239444788",
+    "firebase_url": "https://dongguk-dev.firebaseio.com",
+    "project_id": "dongguk-dev",
+    "storage_bucket": "dongguk-dev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855239444788:android:dd7ab6409edcf393",
+        "android_client_info": {
+          "package_name": "com.likelion.mountainq.sleepkeeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "855239444788-e0qus3fmts3pej380pu1ochetm4agh3g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdkKLV8Fg_5gzZOnaGB4NElHRbymofMvQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

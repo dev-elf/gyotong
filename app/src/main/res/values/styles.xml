@@ -1,0 +1,22 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="ButtonStyle">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="AppTheme.CustomPop">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:shadowColor">#33000000</item>
+    </style>
+
+</resources>

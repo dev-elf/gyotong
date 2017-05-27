@@ -18,27 +18,46 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.likelion.mountainq.sleepkeeper.data.Dummy;
 import com.likelion.mountainq.sleepkeeper.data.GpsPoint;
+import com.likelion.mountainq.sleepkeeper.manager.ConnectionTask;
+import com.likelion.mountainq.sleepkeeper.manager.PropertyManager;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * Created by dnay2 on 2017-05-26.
  */
 
 public class ReportService extends Service {
+    public static ReportService instance;
+
+    public static ReportService getInstance() {
+        return instance;
+    }
 
     private double lat, lon;
-    private float accuracy, velocity;
+    private float accuracy, velocity, yelocity;
     private LocationManager locationManager;
-    private SensorTask sensorTask;
     private int runTime = 0, numMessage=0;
 
     private ArrayList<GpsPoint> gpsPoints;
     private ArrayList<Float> velocities;
+    public SensorTask sensorTask;
+    private ConnectionTask connectionTask = new ConnectionTask();
 
     @Nullable
     @Override
@@ -46,9 +65,15 @@ public class ReportService extends Service {
         return null;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        instance = this;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         sensorTask = new SensorTask(getApplicationContext());
         gpsPoints = new ArrayList<>();
@@ -61,7 +86,7 @@ public class ReportService extends Service {
             e.printStackTrace();
             Toast.makeText(ReportService.this, "권한을 확인해 주세요!", Toast.LENGTH_SHORT).show();
         }
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -101,25 +126,59 @@ public class ReportService extends Service {
         }
     };
 
-    private class SensorTask extends AsyncTask<Void, String, Void>{
+    public interface Listener{
+        void goServer();
+    }
+
+    public class SensorTask extends AsyncTask<Void, String, Void>{
         long curr = System.currentTimeMillis();
+        private static final String TAG = "ConnectionTask";
+        private final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         private boolean flag = true;
+        private OkHttpClient client = new OkHttpClient();
         private Context mContext;
         private Notification notification;
         private NotificationCompat.Builder nBuilder;
         private NotificationManager nManager;
         private int notifyID = 1;
+        private int vIdx = 0;
+
+
+        public String json, url;
+        public boolean isFlag = false;
+
+
+        public void setConnection(String url, String json, boolean isFlag){
+            this.json = json;
+            this.url = url;
+            this.isFlag = isFlag;
+        }
+
+        private Listener listener;
+
+        public void setListener(Listener listener) {
+            this.listener = listener;
+        }
 
         public SensorTask(Context mContext) {
             this.mContext = mContext;
             nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
 
+
+
         @Override
         protected Void doInBackground(Void... params) {
             while(flag){
                 long time = System.currentTimeMillis();
+                if(isFlag){
+                    _post(url, json);
+                    isFlag = false;
+                }
+
                 if( time > curr + 5000){
+                    Log.d("service task", "time is running " + runTime);
+                    Log.d("service task", "i am in " + lon + " , " + lat);
                     curr = time; // 시간 갱신
                     runTime++; // 5초 단위 추가
                     // 위치값과 속도 갱신
@@ -130,26 +189,36 @@ public class ReportService extends Service {
 
                     if(runTime % 12 == 0){
                         //분 단위 속도 저장
+                        yelocity = Dummy.velocities[vIdx % 16];
+                        velocity = Dummy.velocities[++vIdx % 16];
+//                        velocities.add(velocity);
                         velocities.add(velocity);
                         if(velocities.size() > 1000){
                             velocities.remove(0);
                         }
+                        publishProgress(String.valueOf(velocities.get(velocities.size()-1)) + "m/s" );
                     }
-                    if(runTime > 100){
+                    boolean flag = true;
+                    if(runTime > 100 || flag){
 
-                        //100 초 이후부터는 1분전 속도와 비교해서
-                        if(velocity - velocities.get(velocities.size()-1) < 168.0f){
-//                            String URL = "https://";
-//                            JSONObject jsonObject = new JSONObject();
-//                            try{
-//                                jsonObject.put("latitude", lat);
-//                                jsonObject.put("longitude", lon);
-//                            }catch (JSONException e){
-//                                e.printStackTrace();
-//                            }
-//                            String json = jsonObject.toString();
-//                            new ConnectionTask()._post(URL, json);
-                            Toast.makeText(mContext, "뭔가 발생했다!", Toast.LENGTH_SHORT).show();
+                        /*
+                         * 60km/h(16.8 m/s) 로 달리다가 급정지
+                         * 10km/h(2.8 m/s) 로 되어서 문제 발생
+                         */
+                        Log.d("task", "velocity : " + velocity + " && velocity submit : " + (yelocity - velocity));
+                        if(velocity < 2.8f && velocities.size() > 0 && yelocity- velocity > 10.0f){
+                            String URL = "https://gyotong-jomno.c9users.io/home/request";
+                            JSONObject jsonObject = new JSONObject();
+                            try{
+                                jsonObject.put("token", PropertyManager.getInstance().getPushToken());
+                                jsonObject.put("latitude", lat);
+                                jsonObject.put("longitude", lon);
+                            }catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                            String json = jsonObject.toString();
+                            _post(URL, json);
+                            publishProgress(ConnectionTask.POST);
                         }
                     }
 
@@ -158,6 +227,8 @@ public class ReportService extends Service {
             }
             return null;
         }
+
+
 
         public void quit(){
             flag = false;
@@ -180,8 +251,32 @@ public class ReportService extends Service {
 
         @Override
         protected void onProgressUpdate(String... values) {
-            updateNotification(values[0]);
+            if(values[0].equals(ConnectionTask.POST)){
+                Toast.makeText(mContext, "뭔가 발생했다!", Toast.LENGTH_SHORT).show();
+            }
+            else
+                updateNotification(values[0]);
         }
+
+        public String _post(String url, String json){
+            try{
+                return postMethod(url, json);
+            }catch (IOException e){
+                return e.getMessage();
+            }
+        }
+        private String postMethod (String url, String json) throws IOException {
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .header("content-type", "application/json")
+                    .post(body)
+                    .build();
+            Log.d(TAG, "post request : " + request.body().toString());
+            okhttp3.Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
 
         private void updateNotification(String message){
             RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.activity_report_noti);

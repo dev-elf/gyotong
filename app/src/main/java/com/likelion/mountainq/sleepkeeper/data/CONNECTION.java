@@ -1,6 +1,5 @@
-package com.likelion.mountainq.sleepkeeper.manager;
+package com.likelion.mountainq.sleepkeeper.data;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
@@ -13,32 +12,29 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 /**
- * created by geusan
+ * Created by dnay2 on 2017-05-28.
  */
 
-public class ConnectionTask extends AsyncTask<String, Integer, Integer> {
+public class CONNECTION{
+    private static String result = "";
+    public static String post(final String url, final String json){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                result = _post(url, json);
+            }
+        });
+        return result;
+    }
+
 
     private static final String TAG = "ConnectionTask";
-    private final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private OkHttpClient client = new OkHttpClient();
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static OkHttpClient client = new OkHttpClient();
 
     public static final String POST = "post";
-    public ConnectionTask() {
-    }
 
-    @Override
-    protected Integer doInBackground(String... params) {
-        String result = "null";
-        if(params[0].equals(POST))
-            result = _post(params[1], params[2]);
-        Log.d(TAG, params[0] + " 로 보낸다 " + params[1] + " ");
-        Log.d(TAG, "result : " + result);
-        return 0;
-    }
-
-
-
-    public String _get(String url){
+    private static String _get(String url){
         try{
             return getMethod(url);
         }catch (IOException e){
@@ -46,21 +42,21 @@ public class ConnectionTask extends AsyncTask<String, Integer, Integer> {
         }
     }
 
-    public String _put(String url, Map<String, String> header, String json){
+    private static String _put(String url, Map<String, String> header, String json){
         try{
             return putMethod(url, header, json);
         }catch (IOException e){
             return e.getMessage();
         }
     }
-    public String _post(String url, String json){
+    private static String _post(String url, String json){
         try{
             return postMethod(url, json);
         }catch (IOException e){
             return e.getMessage();
         }
     }
-    private String postMethod (String url, String json) throws IOException {
+    private static String postMethod (String url, String json) throws IOException {
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()
                 .url(url)
@@ -72,7 +68,7 @@ public class ConnectionTask extends AsyncTask<String, Integer, Integer> {
         return response.body().string();
     }
 
-    private String getMethod (String url) throws IOException {
+    private static String getMethod (String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
                 .build();
@@ -80,7 +76,7 @@ public class ConnectionTask extends AsyncTask<String, Integer, Integer> {
         return response.body().string();
     }
 
-    private String putMethod (String url, Map<String, String> headers, String jsonBody) throws IOException{
+    private static String putMethod (String url, Map<String, String> headers, String jsonBody) throws IOException{
         RequestBody body = RequestBody.create(JSON, jsonBody);
         Log.d(TAG, "put request ");
         Request request = new Request.Builder()

@@ -23,7 +23,7 @@ public class TokenService extends FirebaseInstanceIdService {
         String token = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "refreshed token" + token);
         PropertyManager.getInstance().setPushToken(token);
-//        sendToServer(token);
+        sendToServer(token);
     }
 
     private void sendToServer(String token){
@@ -34,7 +34,7 @@ public class TokenService extends FirebaseInstanceIdService {
         }catch (JSONException e){
             e.printStackTrace();
         }
-        String URL = "https://aaa";
+        String URL = "https://gyotong-jomno.c9users.io/home/save";
         String message = jsonObject.toString();
         task._post(URL, message);
     }

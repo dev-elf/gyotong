@@ -70,6 +70,8 @@ public class ReportActivity extends AppCompatActivity {
             PropertyManager.getInstance().setPushToken(token);
             Log.d(TAG, "refreshed token : " + token);
         }
+        Log.d(TAG, "token : " + PropertyManager.getInstance().getPushToken());
+
         checkPermissions();
 
         // AdMob
@@ -78,10 +80,6 @@ public class ReportActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
         // adMob end
-
-
-
-
 
     }
 

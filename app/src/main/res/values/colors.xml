@@ -6,7 +6,16 @@
     <color name="button_disabled_background">#C0C0C0</color>
 
     <color name="colorPrimary">#000000</color>
-    <color name="colorAccent">#000000</color>
-    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#ff0</color>
+    <color name="statusBarColor">#ff0</color>
+    <color name="navigationBarColor">#ff0</color>
+    <color name="textColorPrimary">#000000</color>
+    <color name="windowBackground"></color>
 
+
+    <color name="btn_report_finish_pressed">#991111</color>
+    <color name="btn_report_finish_normal">#dd4444</color>
+
+    <color name="btn_report_start_pressed">#119911</color>
+    <color name="btn_report_start_normal">#44dd44</color>
 </resources>

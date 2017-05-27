@@ -3,6 +3,7 @@
     xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ffe"
     android:orientation="vertical">
 
     <LinearLayout
@@ -13,7 +14,9 @@
         android:orientation="vertical">
 
         <TextView
-
+            android:text="@string/app_name"
+            android:textSize="30sp"
+            android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -25,6 +28,7 @@
 
             <Button
                 android:id="@+id/serviceStart"
+                android:background="@drawable/report_btn_start"
                 style="?android:buttonBarButtonStyle"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
@@ -33,6 +37,7 @@
                 android:text="@string/service_start" />
 
             <Button
+                android:background="@drawable/report_btn_finish"
                 android:id="@+id/serviceFinish"
                 style="?android:buttonBarButtonStyle"
                 android:layout_width="100dp"
